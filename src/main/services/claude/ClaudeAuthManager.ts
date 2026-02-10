@@ -7,7 +7,7 @@ import { execCommandSafe } from '../platform/ShellExecutor'
 import type { AuthMethod, ClaudeAuthStatus } from '@shared/types/claude'
 
 class ClaudeAuthManager {
-  private claudeDir = join(process.env.HOME || '', '.claude')
+  private claudeDir = join(process.env.HOME || process.env.USERPROFILE || '', '.claude')
 
   /**
    * Check the current authentication status.
@@ -246,20 +246,31 @@ class ClaudeAuthManager {
    * Find the claude executable path.
    */
   private async findClaudeExecutable(): Promise<string | null> {
+    const isWin = process.platform === 'win32'
+
     // Try global claude binary
-    const result = await execCommandSafe('which claude || where claude 2>/dev/null')
+    const whichCmd = isWin ? 'where claude' : 'which claude'
+    const result = await execCommandSafe(whichCmd)
     if (result?.stdout) {
-      const path = result.stdout.split('\n')[0].trim()
-      if (path && existsSync(path)) return path
+      const foundPath = result.stdout.split('\n')[0].trim()
+      if (foundPath && existsSync(foundPath)) return foundPath
     }
 
     // Common global paths
-    const commonPaths = [
-      '/opt/homebrew/bin/claude',
-      '/usr/local/bin/claude',
-      '/usr/bin/claude',
-      join(process.env.HOME || '', '.npm-global', 'bin', 'claude')
-    ]
+    const home = process.env.HOME || process.env.USERPROFILE || ''
+    const commonPaths = isWin
+      ? [
+          join(process.env.APPDATA || '', 'npm', 'claude.cmd'),
+          join(process.env.APPDATA || '', 'npm', 'claude'),
+          join(home, 'AppData', 'Roaming', 'npm', 'claude.cmd'),
+          join(home, '.npm-global', 'claude.cmd')
+        ]
+      : [
+          '/opt/homebrew/bin/claude',
+          '/usr/local/bin/claude',
+          '/usr/bin/claude',
+          join(home, '.npm-global', 'bin', 'claude')
+        ]
     for (const p of commonPaths) {
       if (existsSync(p)) return p
     }

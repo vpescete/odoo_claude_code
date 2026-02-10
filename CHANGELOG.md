@@ -2,6 +2,12 @@
 
 All notable changes to Clodoo will be documented in this file.
 
+## [0.3.1] - 2026-02-10
+
+### Fixed
+- Windows: Claude Code CLI not found (fixed executable search with Windows paths and `where` command)
+- Windows: `USERPROFILE` used as fallback for `HOME` environment variable
+
 ## [0.3.0] - 2026-02-10
 
 ### Added
