@@ -2,6 +2,12 @@
 
 All notable changes to Clodoo will be documented in this file.
 
+## [0.3.0] - 2026-02-10
+
+### Added
+- OAuth browser login for Claude accounts (Pro/Max) via "Login with Browser" button
+- Token input kept as secondary option for Anthropic Console tokens
+
 ## [0.2.1] - 2026-02-10
 
 ### Fixed
