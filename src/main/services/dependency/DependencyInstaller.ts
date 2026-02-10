@@ -153,6 +153,7 @@ export class DependencyInstaller {
         python: 'https://www.python.org/downloads/',
         git: 'https://git-scm.com/download/win',
         postgresql: 'https://www.postgresql.org/download/windows/',
+        pip: 'https://www.python.org/downloads/',
         node: 'https://nodejs.org/en/download/'
       }
       return {
@@ -166,6 +167,7 @@ export class DependencyInstaller {
       python: 'Python.Python.3.12',
       git: 'Git.Git',
       postgresql: 'PostgreSQL.PostgreSQL.16',
+      pip: 'Python.Python.3.12',
       node: 'OpenJS.NodeJS.LTS'
     }
 
