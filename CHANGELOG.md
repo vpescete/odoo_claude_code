@@ -2,6 +2,15 @@
 
 All notable changes to Clodoo will be documented in this file.
 
+## [0.2.0] - 2026-02-10
+
+### Fixed
+- pip dependency installer on Windows ("Unknown dependency: pip" error)
+
+### Improved
+- CI/CD: use `actions/setup-python` for node-gyp compatibility on all runners
+- CI/CD: use `npm install` instead of `npm ci` for cross-platform lockfile support
+
 ## [0.1.0] - 2026-02-10
 
 ### Added
