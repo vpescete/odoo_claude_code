@@ -13,5 +13,7 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
+      - name: Install Python setuptools (needed by node-gyp)
+        run: pip3 install setuptools
       - run: npm install
       - run: npm run typecheck
