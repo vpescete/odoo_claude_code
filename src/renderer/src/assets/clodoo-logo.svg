@@ -1,0 +1,17 @@
+<svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+        <linearGradient id="warm_gradient" x1="0" y1="0" x2="256" y2="256" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#FF7E5F" />
+            <stop offset="1" stop-color="#FEB47B" />
+        </linearGradient>
+    </defs>
+
+    <g transform="translate(128, 128)">
+        <path d="M-80 -80 H0 V0 H-40 V40 H0 V80 H-80 V-80Z" fill="#334155"/>
+
+        <path d="M0 0 H80 V80 H0 V0Z" fill="url(#warm_gradient)"/>
+        <path d="M40 20C42 32 50 38 62 40C50 42 42 50 40 62C38 50 30 42 18 40C30 38 38 32 40 20Z" fill="white"/>
+        
+        <path d="M0 0V-40H40V0H0Z" fill="url(#warm_gradient)" opacity="0.5"/>
+    </g>
+</svg>

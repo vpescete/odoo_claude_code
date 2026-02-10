@@ -1,0 +1,13 @@
+[options]
+addons_path = {{addons_paths}}
+admin_passwd = admin
+db_host = {{db_host}}
+db_port = {{db_port}}
+db_user = {{db_user}}
+db_password = {{db_password}}
+db_name = {{db_name}}
+http_port = {{http_port}}
+longpolling_port = {{longpolling_port}}
+logfile =
+log_level = info
+data_dir = {{data_dir}}
