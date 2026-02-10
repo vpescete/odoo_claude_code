@@ -16,14 +16,14 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install setuptools
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
-
-      - name: Install Python setuptools (needed by node-gyp)
-        run: pip3 install setuptools
-
       - run: npm install
 
       - name: Build & Publish (macOS)
