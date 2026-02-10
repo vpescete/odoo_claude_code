@@ -185,7 +185,11 @@ export class DependencyInstaller {
       )
 
       child.on('close', (code) => {
-        if (code !== 0) {
+        // winget exit code 0 = success
+        // winget exit code -1978335189 (0x8A15002B) = already installed
+        // winget exit code 2316632107 = already installed (unsigned)
+        const alreadyInstalledCodes = [-1978335189, 2316632107]
+        if (code !== 0 && !alreadyInstalledCodes.includes(code ?? -1)) {
           resolve({ success: false, error: `winget install exited with code ${code}` })
           return
         }

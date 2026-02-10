@@ -2,6 +2,12 @@
 
 All notable changes to Clodoo will be documented in this file.
 
+## [0.2.1] - 2026-02-10
+
+### Fixed
+- Windows: dependency checker now finds Git and PostgreSQL in standard install paths when not in PATH
+- Windows: winget "already installed" exit code no longer treated as error
+
 ## [0.2.0] - 2026-02-10
 
 ### Fixed

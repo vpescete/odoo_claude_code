@@ -1,6 +1,20 @@
+import { existsSync } from 'fs'
 import type { DependencyStatus } from '@shared/types/dependency'
 import { platformDetector } from '../platform/PlatformDetector'
 import { execCommandSafe } from '../platform/ShellExecutor'
+
+/** Common Windows install paths for dependencies not yet in PATH */
+const WIN_PATHS: Record<string, string[]> = {
+  git: [
+    'C:\\Program Files\\Git\\cmd\\git.exe',
+    'C:\\Program Files (x86)\\Git\\cmd\\git.exe'
+  ],
+  psql: [
+    'C:\\Program Files\\PostgreSQL\\16\\bin\\psql.exe',
+    'C:\\Program Files\\PostgreSQL\\15\\bin\\psql.exe',
+    'C:\\Program Files\\PostgreSQL\\14\\bin\\psql.exe'
+  ]
+}
 
 export class DependencyChecker {
   private platform = platformDetector
@@ -63,7 +77,19 @@ export class DependencyChecker {
   }
 
   async checkGit(): Promise<DependencyStatus> {
-    const result = await execCommandSafe('git --version')
+    // Try PATH first, then common Windows install locations
+    let result = await execCommandSafe('git --version')
+    let gitPath: string | undefined
+
+    if (!result && this.platform.isWindows) {
+      for (const p of WIN_PATHS.git) {
+        if (existsSync(p)) {
+          result = await execCommandSafe(`"${p}" --version`)
+          if (result) { gitPath = p; break }
+        }
+      }
+    }
+
     if (!result) {
       return {
         id: 'git',
@@ -76,7 +102,10 @@ export class DependencyChecker {
     }
 
     const versionMatch = result.stdout.match(/git version (\d+\.\d+[\.\d]*)/)
-    const pathResult = await execCommandSafe(`${this.platform.whichCommand} git`)
+    if (!gitPath) {
+      const pathResult = await execCommandSafe(`${this.platform.whichCommand} git`)
+      gitPath = pathResult?.stdout.split('\n')[0]
+    }
 
     return {
       id: 'git',
@@ -84,14 +113,29 @@ export class DependencyChecker {
       required: true,
       installed: true,
       version: versionMatch?.[1] || 'unknown',
-      path: pathResult?.stdout.split('\n')[0],
+      path: gitPath,
       installInstructions: '',
       canAutoInstall: true
     }
   }
 
   async checkPostgreSQL(): Promise<DependencyStatus> {
-    const result = await execCommandSafe('psql --version')
+    // Try PATH first, then common Windows install locations
+    let result = await execCommandSafe('psql --version')
+    let psqlDir: string | undefined
+
+    if (!result && this.platform.isWindows) {
+      for (const p of WIN_PATHS.psql) {
+        if (existsSync(p)) {
+          result = await execCommandSafe(`"${p}" --version`)
+          if (result) {
+            psqlDir = p.replace(/\\psql\.exe$/, '')
+            break
+          }
+        }
+      }
+    }
+
     if (!result) {
       return {
         id: 'postgresql',
@@ -106,7 +150,8 @@ export class DependencyChecker {
     const versionMatch = result.stdout.match(/(\d+[\.\d]*)/)
 
     // Check if server is running
-    const isReady = await execCommandSafe('pg_isready')
+    const pgIsReadyCmd = psqlDir ? `"${psqlDir}\\pg_isready.exe"` : 'pg_isready'
+    const isReady = await execCommandSafe(pgIsReadyCmd)
     const serverRunning = isReady !== null && isReady.stdout.includes('accepting connections')
 
     return {
@@ -117,7 +162,7 @@ export class DependencyChecker {
       version: versionMatch?.[1] || 'unknown',
       installInstructions: '',
       canAutoInstall: true,
-      extra: { serverRunning }
+      extra: { serverRunning, binDir: psqlDir }
     }
   }
 
