@@ -15,10 +15,11 @@ export class PipManager {
     }
 
     const pipBin = venvManager.getPipBin(venvPath)
+    const pythonBin = venvManager.getPythonBin(venvPath)
 
-    // First upgrade pip itself
+    // First upgrade pip using python -m pip (required on Windows)
     onProgress('Upgrading pip...', 5)
-    await this.runPip(pipBin, ['install', '--upgrade', 'pip'], (msg) => onProgress(msg, 10))
+    await this.runCommand(pythonBin, ['-m', 'pip', 'install', '--upgrade', 'pip'], (msg) => onProgress(msg, 10))
 
     // Install requirements
     return new Promise((resolve, reject) => {
@@ -64,9 +65,9 @@ export class PipManager {
     })
   }
 
-  private runPip(pipBin: string, args: string[], onProgress: (msg: string) => void): Promise<void> {
+  private runCommand(bin: string, args: string[], onProgress: (msg: string) => void): Promise<void> {
     return new Promise((resolve, reject) => {
-      const child = spawn(pipBin, args, {
+      const child = spawn(bin, args, {
         stdio: ['ignore', 'pipe', 'pipe']
       })
 
