@@ -142,6 +142,8 @@ const api = {
       ipcRenderer.invoke('claude:delete-session-record', { instanceId, sessionId }),
     checkAuth: (): Promise<ClaudeAuthStatus> =>
       ipcRenderer.invoke('claude:check-auth'),
+    loginOAuth: (): Promise<{ success: boolean; error?: string }> =>
+      ipcRenderer.invoke('claude:login-oauth'),
     loginWithToken: (token: string): Promise<{ success: boolean; error?: string }> =>
       ipcRenderer.invoke('claude:login-with-token', { token }),
     logout: (): Promise<void> =>

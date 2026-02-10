@@ -312,30 +312,58 @@ export function SettingsPage() {
                 <div className="space-y-3">
                   <div className="bg-muted/50 rounded-md p-3 space-y-2">
                     <p className="text-xs font-medium">
-                      How to get your authentication token:
+                      Login with your Claude account (Pro/Max)
                     </p>
-                    <ol className="text-xs text-muted-foreground space-y-1 list-decimal list-inside">
-                      <li>
-                        Go to your{' '}
-                        <a
-                          href="#"
-                          onClick={(e) => {
-                            e.preventDefault()
-                            window.open?.('https://console.anthropic.com')
-                          }}
-                          className="text-primary underline underline-offset-2 hover:text-primary/80 inline-flex items-center gap-0.5"
-                        >
-                          Anthropic Console <ExternalLink size={10} />
-                        </a>
-                      </li>
-                      <li>Navigate to Settings and find your authentication token</li>
-                      <li>Copy the token and paste it below</li>
-                    </ol>
+                    <p className="text-xs text-muted-foreground">
+                      Opens the browser to authenticate via claude.ai. Requires Claude Code CLI installed.
+                    </p>
                   </div>
 
+                  <Button
+                    onClick={async () => {
+                      setLoggingIn(true)
+                      setLoginError(null)
+                      setLoginSuccess(false)
+                      try {
+                        const result = await window.api.claude.loginOAuth()
+                        if (result.success) {
+                          setLoginSuccess(true)
+                          await checkAuthStatus()
+                        } else {
+                          setLoginError(result.error || 'OAuth login failed')
+                        }
+                      } catch {
+                        setLoginError('Failed to start OAuth login')
+                      } finally {
+                        setLoggingIn(false)
+                      }
+                    }}
+                    disabled={loggingIn}
+                    className="w-full"
+                  >
+                    {loggingIn ? (
+                      <Loader2 size={14} className="animate-spin" />
+                    ) : (
+                      <ExternalLink size={14} />
+                    )}
+                    {loggingIn ? 'Waiting for browser login...' : 'Login with Browser'}
+                  </Button>
+
+                  <Separator />
+
                   <div className="space-y-1.5">
-                    <label className="block text-sm font-medium">
-                      Authentication Token
+                    <label className="block text-xs text-muted-foreground">
+                      Or paste a token from{' '}
+                      <a
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault()
+                          window.open?.('https://console.anthropic.com')
+                        }}
+                        className="text-primary underline underline-offset-2 hover:text-primary/80 inline-flex items-center gap-0.5"
+                      >
+                        Anthropic Console <ExternalLink size={10} />
+                      </a>
                     </label>
                     <div className="flex gap-2">
                       <div className="relative flex-1">
@@ -364,6 +392,7 @@ export function SettingsPage() {
                         </button>
                       </div>
                       <Button
+                        variant="outline"
                         onClick={handleLoginWithToken}
                         disabled={!accountToken.trim() || loggingIn}
                       >
@@ -372,7 +401,7 @@ export function SettingsPage() {
                         ) : (
                           <LogIn size={14} />
                         )}
-                        {loggingIn ? 'Connecting...' : 'Login'}
+                        Login
                       </Button>
                     </div>
                   </div>

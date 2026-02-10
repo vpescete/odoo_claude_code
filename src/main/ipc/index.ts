@@ -211,6 +211,10 @@ export function registerAllIpcHandlers(): void {
     return claudeAuthManager.checkAuthStatus()
   })
 
+  ipcMain.handle('claude:login-oauth', async () => {
+    return claudeAuthManager.loginOAuth()
+  })
+
   ipcMain.handle('claude:login-with-token', async (_event, { token }) => {
     return claudeAuthManager.loginWithToken(token)
   })

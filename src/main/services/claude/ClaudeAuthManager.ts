@@ -118,6 +118,49 @@ class ClaudeAuthManager {
   }
 
   /**
+   * Login via OAuth (browser-based flow).
+   * Runs `claude login` which opens the browser for authentication via claude.ai.
+   */
+  async loginOAuth(): Promise<{ success: boolean; error?: string }> {
+    try {
+      const claudePath = await this.findClaudeExecutable()
+      if (!claudePath) {
+        return { success: false, error: 'Claude Code CLI not found. Install with: npm install -g @anthropic-ai/claude-code' }
+      }
+
+      return await new Promise((resolve) => {
+        const child = spawn(claudePath, ['login'], {
+          timeout: 120000,
+          stdio: ['ignore', 'pipe', 'pipe']
+        })
+
+        let stderr = ''
+
+        child.stderr?.on('data', (data: Buffer) => {
+          stderr += data.toString()
+        })
+
+        child.on('close', (code) => {
+          if (code === 0) {
+            resolve({ success: true })
+          } else {
+            resolve({
+              success: false,
+              error: stderr.trim() || 'OAuth login failed'
+            })
+          }
+        })
+
+        child.on('error', (err) => {
+          resolve({ success: false, error: err.message })
+        })
+      })
+    } catch (err) {
+      return { success: false, error: err instanceof Error ? err.message : 'Unknown error' }
+    }
+  }
+
+  /**
    * Login with a long-lived authentication token from the Anthropic console.
    * This runs `claude setup-token` and pipes the token to it.
    */
