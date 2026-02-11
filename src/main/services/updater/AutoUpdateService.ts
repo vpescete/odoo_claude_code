@@ -1,5 +1,5 @@
 import { autoUpdater } from 'electron-updater'
-import { BrowserWindow } from 'electron'
+import { BrowserWindow, Notification } from 'electron'
 import log from 'electron-log'
 import { is } from '@electron-toolkit/utils'
 import type { UpdateInfo } from '@shared/types/update'
@@ -33,6 +33,7 @@ class AutoUpdateService {
 
     autoUpdater.on('update-downloaded', () => {
       this.sendToRenderer('update:ready', this.updateInfo)
+      this.showNativeNotification()
     })
 
     autoUpdater.on('error', (error) => {
@@ -61,11 +62,27 @@ class AutoUpdateService {
   }
 
   quitAndInstall(): void {
-    autoUpdater.quitAndInstall()
+    autoUpdater.quitAndInstall(false, true)
   }
 
   getUpdateInfo(): UpdateInfo | null {
     return this.updateInfo
+  }
+
+  private showNativeNotification(): void {
+    if (!Notification.isSupported()) return
+    const notification = new Notification({
+      title: 'Clodoo Update Ready',
+      body: `Version ${this.updateInfo?.version ?? 'unknown'} has been downloaded. Restart to install.`
+    })
+    notification.on('click', () => {
+      const win = BrowserWindow.getAllWindows()[0]
+      if (win) {
+        win.show()
+        win.focus()
+      }
+    })
+    notification.show()
   }
 
   private sendToRenderer(channel: string, data: unknown): void {
