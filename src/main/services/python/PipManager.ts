@@ -17,15 +17,16 @@ export class PipManager {
     const pipBin = venvManager.getPipBin(venvPath)
     const pythonBin = venvManager.getPythonBin(venvPath)
 
-    // First upgrade pip using python -m pip (required on Windows)
-    onProgress('Upgrading pip...', 5)
-    await this.runCommand(pythonBin, ['-m', 'pip', 'install', '--upgrade', 'pip'], (msg) => onProgress(msg, 10))
+    // First upgrade pip, setuptools, and wheel (required on Windows for C extensions)
+    onProgress('Upgrading pip, setuptools, wheel...', 5)
+    await this.runCommand(pythonBin, ['-m', 'pip', 'install', '--upgrade', 'pip', 'setuptools', 'wheel'], (msg) => onProgress(msg, 10))
 
-    // Install requirements
+    // Install requirements (prefer binary wheels to avoid C compilation)
     return new Promise((resolve, reject) => {
       onProgress('Installing Python dependencies...', 15)
 
-      const child = spawn(pipBin, ['install', '-r', requirementsPath], {
+      const args = ['install', '-r', requirementsPath, '--prefer-binary']
+      const child = spawn(pipBin, args, {
         stdio: ['ignore', 'pipe', 'pipe']
       })
 

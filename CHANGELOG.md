@@ -2,6 +2,12 @@
 
 All notable changes to Clodoo will be documented in this file.
 
+## [0.4.1] - 2026-02-11
+
+### Fixed
+- Windows: install setuptools and wheel in venv before dependencies (fixes rl-renderPM build error)
+- Windows: use `--prefer-binary` flag to avoid compiling C extensions when wheels are available
+
 ## [0.4.0] - 2026-02-11
 
 ### Changed
