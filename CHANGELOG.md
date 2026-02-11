@@ -2,6 +2,13 @@
 
 All notable changes to Clodoo will be documented in this file.
 
+## [0.4.0] - 2026-02-11
+
+### Changed
+- Moved update notifications from top banner to Settings page
+- StatusBar shows subtle "v0.x.x available" link that navigates to Settings
+- Settings: new "Updates" card with check, download, and install actions
+
 ## [0.3.2] - 2026-02-11
 
 ### Fixed

@@ -4,14 +4,12 @@ import { AppSidebar } from './app-sidebar'
 import { SiteHeader } from './site-header'
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts'
-import { UpdateBanner } from '@/components/update/UpdateBanner'
 
 export function AppLayout() {
   useKeyboardShortcuts()
 
   return (
     <div className="h-screen flex flex-col overflow-hidden">
-      <UpdateBanner />
       <div className="flex flex-1 overflow-hidden">
         <SidebarProvider>
           <AppSidebar />

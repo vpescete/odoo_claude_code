@@ -1,14 +1,29 @@
 import { useState, useEffect } from 'react'
-import { Circle, Box } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { Circle, Box, ArrowUpCircle } from 'lucide-react'
+import type { UpdateInfo } from '@shared/types/update'
 
 export function StatusBar() {
+  const navigate = useNavigate()
   const [runningCount, setRunningCount] = useState(0)
   const [totalCount, setTotalCount] = useState(0)
   const [version, setVersion] = useState('')
+  const [updateAvailable, setUpdateAvailable] = useState<UpdateInfo | null>(null)
 
   // Fetch app version
   useEffect(() => {
     window.api.app.getVersion().then(setVersion)
+  }, [])
+
+  // Listen for update events
+  useEffect(() => {
+    window.api.update.getInfo().then((info) => {
+      if (info) setUpdateAvailable(info)
+    })
+    const unsub = window.api.on.updateAvailable((info: UpdateInfo) => {
+      setUpdateAvailable(info)
+    })
+    return unsub
   }, [])
 
   // Fetch initial counts
@@ -53,6 +68,15 @@ export function StatusBar() {
         <span className="opacity-60">
           {mod}+N new &middot; {mod}+, settings &middot; Esc back
         </span>
+        {updateAvailable && (
+          <button
+            onClick={() => navigate('/settings')}
+            className="flex items-center gap-1 text-primary hover:text-primary/80 transition-colors"
+          >
+            <ArrowUpCircle size={10} />
+            v{updateAvailable.version} available
+          </button>
+        )}
         {version && <span>v{version}</span>}
       </div>
     </footer>

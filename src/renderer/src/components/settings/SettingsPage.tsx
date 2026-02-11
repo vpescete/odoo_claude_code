@@ -16,7 +16,10 @@ import {
   ExternalLink,
   ChevronDown,
   Wrench,
-  AlertCircle
+  AlertCircle,
+  ArrowUpCircle,
+  Download,
+  RotateCcw
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
@@ -34,6 +37,7 @@ import { SUPPORTED_VERSIONS } from '@shared/constants/odooVersions'
 import type { OdooVersion, OdooEdition } from '@shared/types/odoo'
 import type { AppSettings } from '@shared/types/settings'
 import type { ClaudeAuthStatus } from '@shared/types/claude'
+import type { UpdateInfo, UpdateProgress } from '@shared/types/update'
 
 type AuthTab = 'account' | 'api-key'
 
@@ -71,6 +75,12 @@ export function SettingsPage() {
   // Python paths state
   const [pythonPaths, setPythonPaths] = useState<Record<string, string>>({})
 
+  // Update states
+  const [updateInfo, setUpdateInfo] = useState<UpdateInfo | null>(null)
+  const [updateStatus, setUpdateStatus] = useState<'idle' | 'checking' | 'downloading' | 'ready'>('idle')
+  const [updateProgress, setUpdateProgress] = useState(0)
+  const [appVersion, setAppVersion] = useState('')
+
   // Advanced section
   const [advancedOpen, setAdvancedOpen] = useState(false)
 
@@ -106,6 +116,32 @@ export function SettingsPage() {
     loadSettings()
     checkAuthStatus()
   }, [loadSettings, checkAuthStatus])
+
+  // Update events
+  useEffect(() => {
+    window.api.app.getVersion().then(setAppVersion)
+    window.api.update.getInfo().then((info) => {
+      if (info) {
+        setUpdateInfo(info)
+        setUpdateStatus('idle')
+      }
+    })
+    const unsubAvailable = window.api.on.updateAvailable((info: UpdateInfo) => {
+      setUpdateInfo(info)
+      setUpdateStatus('idle')
+    })
+    const unsubProgress = window.api.on.updateDownloadProgress((data: UpdateProgress) => {
+      setUpdateProgress(Math.round(data.percent))
+    })
+    const unsubReady = window.api.on.updateReady(() => {
+      setUpdateStatus('ready')
+    })
+    return () => {
+      unsubAvailable()
+      unsubProgress()
+      unsubReady()
+    }
+  }, [])
 
   const showSaved = (field: string): void => {
     setSavedField(field)
@@ -830,7 +866,88 @@ export function SettingsPage() {
         </CardContent>
       </Card>
 
-      {/* 7. Advanced (Collapsible) */}
+      {/* 7. Updates */}
+      <Card className="col-span-2">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <ArrowUpCircle size={16} />
+            Updates
+          </CardTitle>
+          <CardDescription>
+            Current version: v{appVersion}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {updateStatus === 'ready' ? (
+            <div className="flex items-center justify-between px-3 py-2.5 rounded-md border border-green-500/30 bg-green-500/5">
+              <div className="flex items-center gap-2">
+                <Check size={14} className="text-green-600" />
+                <span className="text-sm">Update v{updateInfo?.version} ready! Installs on quit.</span>
+              </div>
+              <Button size="sm" onClick={() => window.api.update.install()}>
+                <RotateCcw size={12} />
+                Restart & Install
+              </Button>
+            </div>
+          ) : updateStatus === 'downloading' ? (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-sm">
+                <span>Downloading v{updateInfo?.version}...</span>
+                <span>{updateProgress}%</span>
+              </div>
+              <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+                <div
+                  className="h-full bg-primary rounded-full transition-all"
+                  style={{ width: `${updateProgress}%` }}
+                />
+              </div>
+            </div>
+          ) : updateInfo ? (
+            <div className="flex items-center justify-between px-3 py-2.5 rounded-md border border-primary/30 bg-primary/5">
+              <div className="flex items-center gap-2">
+                <ArrowUpCircle size={14} className="text-primary" />
+                <span className="text-sm">Update v{updateInfo.version} available</span>
+              </div>
+              <Button
+                size="sm"
+                onClick={() => {
+                  setUpdateStatus('downloading')
+                  window.api.update.download()
+                }}
+              >
+                <Download size={12} />
+                Download
+              </Button>
+            </div>
+          ) : (
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">No updates available</span>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={updateStatus === 'checking'}
+                onClick={() => {
+                  setUpdateStatus('checking')
+                  window.api.update.check().then(() => {
+                    setTimeout(() => {
+                      if (!updateInfo) setUpdateStatus('idle')
+                    }, 3000)
+                  })
+                }}
+              >
+                {updateStatus === 'checking' ? (
+                  <Loader2 size={12} className="animate-spin" />
+                ) : (
+                  <ArrowUpCircle size={12} />
+                )}
+                Check for Updates
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* 8. Advanced (Collapsible) */}
       <Collapsible open={advancedOpen} onOpenChange={setAdvancedOpen} className="col-span-2">
         <Card>
           <CardHeader className="pb-0">
