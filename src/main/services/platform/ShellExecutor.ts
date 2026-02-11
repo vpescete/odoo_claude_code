@@ -1,7 +1,30 @@
 import { exec, spawn, type ChildProcess } from 'child_process'
 import { promisify } from 'util'
+import { platformDetector } from './PlatformDetector'
 
 const execAsync = promisify(exec)
+
+/** Extra bin directories that may not be in Electron's default PATH on macOS */
+const EXTRA_MAC_PATHS = [
+  '/opt/homebrew/bin',
+  '/opt/homebrew/sbin',
+  '/usr/local/bin',
+  '/usr/local/sbin',
+]
+
+function getEnhancedEnv(): NodeJS.ProcessEnv {
+  if (platformDetector.isMac) {
+    const currentPath = process.env.PATH || ''
+    const extraPaths = EXTRA_MAC_PATHS.filter(p => !currentPath.includes(p))
+    if (extraPaths.length > 0) {
+      return {
+        ...process.env,
+        PATH: `${extraPaths.join(':')}:${currentPath}`
+      }
+    }
+  }
+  return process.env
+}
 
 export interface ExecResult {
   stdout: string
@@ -13,7 +36,7 @@ export async function execCommand(
   timeout = 15000
 ): Promise<ExecResult> {
   try {
-    const { stdout, stderr } = await execAsync(command, { timeout })
+    const { stdout, stderr } = await execAsync(command, { timeout, env: getEnhancedEnv() })
     return { stdout: stdout.trim(), stderr: stderr.trim() }
   } catch (error) {
     const err = error as Error & { stdout?: string; stderr?: string }
@@ -40,7 +63,8 @@ export function spawnWithProgress(
 ): ChildProcess {
   const child = spawn(command, args, {
     shell: true,
-    stdio: ['ignore', 'pipe', 'pipe']
+    stdio: ['ignore', 'pipe', 'pipe'],
+    env: getEnhancedEnv()
   })
 
   child.stdout?.on('data', (data: Buffer) => {
