@@ -108,7 +108,9 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
   }
 
   return (
-    <div className="h-screen flex flex-col items-center justify-center p-8">
+    <div className="h-screen flex flex-col items-center justify-center p-8 relative">
+      {/* Drag region for window dragging */}
+      <div className="drag-region absolute top-0 left-0 right-0 h-12" />
       <div className="w-full max-w-lg">
         {/* Header */}
         <div className="text-center mb-8">

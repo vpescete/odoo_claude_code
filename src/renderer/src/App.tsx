@@ -9,15 +9,26 @@ import { InstanceDetail } from './components/instance/InstanceDetail'
 
 function applyTheme(theme: string): void {
   const html = document.documentElement
+  let effectiveDark: boolean
   if (theme === 'dark') {
     html.classList.add('dark')
+    effectiveDark = true
   } else if (theme === 'light') {
     html.classList.remove('dark')
+    effectiveDark = false
   } else {
     // system
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
     html.classList.toggle('dark', prefersDark)
+    effectiveDark = prefersDark
   }
+
+  // Sync title bar overlay colors on Windows
+  window.api.window.setTitleBarOverlay(
+    effectiveDark
+      ? { color: '#080d19', symbolColor: '#94a3b8' }
+      : { color: '#f1f5f9', symbolColor: '#334155' }
+  )
 }
 
 export default function App() {

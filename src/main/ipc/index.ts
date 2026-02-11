@@ -41,6 +41,20 @@ export function registerAllIpcHandlers(): void {
     return win?.isMaximized() ?? false
   })
 
+  ipcMain.on('window:set-title-bar-overlay', (event, options: { color: string; symbolColor: string }) => {
+    if (process.platform !== 'win32') return
+    const win = BrowserWindow.fromWebContents(event.sender)
+    try {
+      win?.setTitleBarOverlay({
+        color: options.color,
+        symbolColor: options.symbolColor,
+        height: 48
+      })
+    } catch {
+      // setTitleBarOverlay may fail if overlay is not enabled
+    }
+  })
+
   // Settings
   ipcMain.handle('settings:get', () => {
     return settingsStore.get()

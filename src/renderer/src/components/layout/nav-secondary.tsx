@@ -36,6 +36,13 @@ export function NavSecondary() {
     }
     setIsDark(next === 'dark')
     await window.api.settings.update({ theme: next })
+
+    // Sync title bar overlay colors on Windows
+    window.api.window.setTitleBarOverlay(
+      next === 'dark'
+        ? { color: '#080d19', symbolColor: '#94a3b8' }
+        : { color: '#f1f5f9', symbolColor: '#334155' }
+    )
   }, [isDark])
 
   return (

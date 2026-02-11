@@ -12,6 +12,8 @@ const api = {
     maximize: (): void => ipcRenderer.send('window:maximize'),
     close: (): void => ipcRenderer.send('window:close'),
     isMaximized: (): Promise<boolean> => ipcRenderer.invoke('window:is-maximized'),
+    setTitleBarOverlay: (options: { color: string; symbolColor: string }): void =>
+      ipcRenderer.send('window:set-title-bar-overlay', options),
     onMaximizeChange: (callback: (maximized: boolean) => void): (() => void) => {
       const handler = (_event: Electron.IpcRendererEvent, maximized: boolean): void => {
         callback(maximized)

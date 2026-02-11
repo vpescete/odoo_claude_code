@@ -5,5 +5,6 @@ export interface WindowAPI {
   maximize: () => void
   close: () => void
   isMaximized: () => Promise<boolean>
+  setTitleBarOverlay: (options: { color: string; symbolColor: string }) => void
   onMaximizeChange: (callback: (maximized: boolean) => void) => () => void
 }

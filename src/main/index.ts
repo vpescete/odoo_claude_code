@@ -6,6 +6,7 @@ import { odooProcessManager } from './services/odoo/OdooProcessManager'
 import { odooShellManager } from './services/odoo/OdooShellManager'
 import { claudeSessionManager } from './services/claude/ClaudeSessionManager'
 import { instanceStore } from './store/InstanceStore'
+import { settingsStore } from './store/SettingsStore'
 import { autoUpdateService } from './services/updater/AutoUpdateService'
 
 let mainWindow: BrowserWindow | null = null
@@ -20,15 +21,28 @@ function getIconPath(): string {
 function createWindow(): void {
   const icon = nativeImage.createFromPath(getIconPath())
 
+  // Determine titleBarOverlay for Windows
+  const isWindows = process.platform === 'win32'
+  let titleBarOverlay: Electron.TitleBarOverlayOptions | false = false
+  if (isWindows) {
+    const theme = settingsStore.get().theme || 'dark'
+    const isDark = theme === 'dark' || (theme === 'system' && true) // default dark for system
+    titleBarOverlay = {
+      color: isDark ? '#080d19' : '#f1f5f9',
+      symbolColor: isDark ? '#94a3b8' : '#334155',
+      height: 48
+    }
+  }
+
   mainWindow = new BrowserWindow({
     width: 1400,
     height: 900,
     minWidth: 1000,
     minHeight: 700,
     show: false,
-    frame: false,
     icon,
     titleBarStyle: 'hidden',
+    ...(isWindows && { titleBarOverlay }),
     trafficLightPosition: { x: 16, y: 16 },
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
@@ -40,6 +54,14 @@ function createWindow(): void {
 
   mainWindow.on('ready-to-show', () => {
     mainWindow?.show()
+  })
+
+  // Emit maximize state changes to the renderer
+  mainWindow.on('maximize', () => {
+    mainWindow?.webContents.send('window:maximize-changed', true)
+  })
+  mainWindow.on('unmaximize', () => {
+    mainWindow?.webContents.send('window:maximize-changed', false)
   })
 
   mainWindow.webContents.setWindowOpenHandler((details) => {

@@ -154,14 +154,25 @@ export function SettingsPage() {
 
     if (updates.theme) {
       const html = document.documentElement
+      let effectiveDark: boolean
       if (updates.theme === 'dark') {
         html.classList.add('dark')
+        effectiveDark = true
       } else if (updates.theme === 'light') {
         html.classList.remove('dark')
+        effectiveDark = false
       } else {
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
         html.classList.toggle('dark', prefersDark)
+        effectiveDark = prefersDark
       }
+
+      // Sync title bar overlay colors on Windows
+      window.api.window.setTitleBarOverlay(
+        effectiveDark
+          ? { color: '#080d19', symbolColor: '#94a3b8' }
+          : { color: '#f1f5f9', symbolColor: '#334155' }
+      )
     }
   }
 

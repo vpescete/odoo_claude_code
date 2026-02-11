@@ -4,6 +4,9 @@ import { Plus } from 'lucide-react'
 import { SidebarTrigger } from '@/components/ui/sidebar'
 import { Separator } from '@/components/ui/separator'
 import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
+
+const isWindows = navigator.userAgent.includes('Windows')
 
 function usePageTitle(): string {
   const location = useLocation()
@@ -37,7 +40,10 @@ export function SiteHeader() {
   return (
     <header
       data-slot="site-header"
-      className="drag-region flex h-(--header-height) shrink-0 items-center gap-2 border-b px-4"
+      className={cn(
+        'drag-region flex h-(--header-height) shrink-0 items-center gap-2 border-b px-4',
+        isWindows && 'pr-[140px]'
+      )}
     >
       <SidebarTrigger className="-ml-1 no-drag" />
       <Separator orientation="vertical" className="mx-2 !h-4" />
