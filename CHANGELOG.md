@@ -2,6 +2,11 @@
 
 All notable changes to Clodoo will be documented in this file.
 
+## [0.3.2] - 2026-02-11
+
+### Fixed
+- Windows: pip upgrade now uses `python -m pip` instead of `pip.exe` directly (fixes self-upgrade error)
+
 ## [0.3.1] - 2026-02-10
 
 ### Fixed
