@@ -1,4 +1,5 @@
 import { exec, spawn, type ChildProcess } from 'child_process'
+import { existsSync } from 'fs'
 import { promisify } from 'util'
 import { platformDetector } from './PlatformDetector'
 
@@ -10,12 +11,23 @@ const EXTRA_MAC_PATHS = [
   '/opt/homebrew/sbin',
   '/usr/local/bin',
   '/usr/local/sbin',
+  // Homebrew keg-only PostgreSQL (not symlinked into the main bin dirs)
+  '/opt/homebrew/opt/postgresql@17/bin',
+  '/opt/homebrew/opt/postgresql@16/bin',
+  '/opt/homebrew/opt/postgresql@15/bin',
+  '/opt/homebrew/opt/postgresql@14/bin',
+  '/usr/local/opt/postgresql@17/bin',
+  '/usr/local/opt/postgresql@16/bin',
+  '/usr/local/opt/postgresql@15/bin',
+  '/usr/local/opt/postgresql@14/bin',
 ]
 
 function getEnhancedEnv(): NodeJS.ProcessEnv {
   if (platformDetector.isMac) {
     const currentPath = process.env.PATH || ''
-    const extraPaths = EXTRA_MAC_PATHS.filter(p => !currentPath.includes(p))
+    const extraPaths = EXTRA_MAC_PATHS.filter(
+      p => !currentPath.includes(p) && existsSync(p)
+    )
     if (extraPaths.length > 0) {
       return {
         ...process.env,
