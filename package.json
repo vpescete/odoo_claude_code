@@ -1,6 +1,6 @@
 {
   "name": "clodoo",
-  "version": "0.4.1",
+  "version": "0.4.2-alpha",
   "description": "Desktop app for managing Odoo instances with Claude Code integration",
   "main": "./out/main/index.js",
   "author": "Valerio Pescetelli",
